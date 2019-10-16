@@ -7,12 +7,16 @@ import android.content.pm.PackageManager
 import android.location.Address
 import android.location.Location
 import android.os.Bundle
+import android.view.View
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.fragment.app.Fragment
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException
 import com.google.android.gms.common.GooglePlayServicesRepairableException
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
+import com.google.android.gms.location.places.Place
 import com.google.android.gms.location.places.ui.PlacePicker
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -23,12 +27,15 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlinx.android.synthetic.main.activity_map.*
+import java.util.*
 
-class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
+class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener{
 
     override fun onMarkerClick(p0: Marker?) = false
 
     private lateinit var mMap: GoogleMap
+    private var click_status: Int = 0
     private lateinit var mFusedLocationProviderClient: FusedLocationProviderClient
     private lateinit var lastLocation: Location
     private lateinit var locationCallback: LocationCallback
@@ -49,6 +56,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
             loadPlacePicker()
         }
 
+        editTextBtn.setOnClickListener(){
+            locationSearchArea.setTransitionVisibility(View.VISIBLE)
+            click_status = 1
+        }
 
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -61,8 +72,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
             }
         }
 
-
-        createLocationRequest()
+      createLocationRequest()
 
     }
 
@@ -72,6 +82,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
         private const val PLACE_PICKER_REQUEST = 3
 
     }
+
+
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
@@ -179,6 +191,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
     // 1
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+
         if (requestCode == REQUEST_CHECK_SETTINGS) {
             if (resultCode == Activity.RESULT_OK) {
                 locationUpdateState = true
@@ -195,6 +208,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
                 }
 
             }
+
         }
     }
 
