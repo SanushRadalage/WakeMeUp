@@ -1,5 +1,6 @@
 package com.example.wakemeup
 
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.IntentSender
@@ -7,17 +8,14 @@ import android.content.pm.PackageManager
 import android.location.Address
 import android.location.Location
 import android.os.Bundle
+import android.util.Log
 import android.view.View
-import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
-import androidx.fragment.app.Fragment
-import com.google.android.gms.common.GooglePlayServicesNotAvailableException
-import com.google.android.gms.common.GooglePlayServicesRepairableException
 import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.*
-import com.google.android.gms.location.places.Place
-import com.google.android.gms.location.places.ui.PlacePicker
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -26,8 +24,17 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.api.model.TypeFilter
+import com.google.android.libraries.places.widget.Autocomplete
+import com.google.android.libraries.places.widget.AutocompleteActivity
+import com.google.android.libraries.places.widget.AutocompleteSupportFragment
+import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.android.synthetic.main.activity_map.*
+import java.lang.Exception
 import java.util.*
 
 class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener{
@@ -41,6 +48,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
     private lateinit var locationCallback: LocationCallback
     private lateinit var locationRequest: LocationRequest
     private var locationUpdateState = false
+    lateinit var destination: String
+    lateinit var destinationLatLng: LatLng
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,15 +60,47 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
-        val fab = findViewById<FloatingActionButton>(R.id.fab)
-        fab.setOnClickListener {
-            loadPlacePicker()
+        destinationLatLng = LatLng(0.0, 0.0)
+
+        if (!Places.isInitialized()) {
+            Places.initialize(applicationContext, getString(R.string.google_api_key), Locale.US)
         }
 
-        editTextBtn.setOnClickListener(){
-            locationSearchArea.setTransitionVisibility(View.VISIBLE)
-            click_status = 1
-        }
+
+
+//        val fab = findViewById<FloatingActionButton>(R.id.fab)
+//        fab.setOnClickListener {
+//            loadPlacePicker()
+//        }
+//
+//        editTextBtn.setOnClickListener(){
+//            locationSearchArea.setTransitionVisibility(View.VISIBLE)
+//            click_status = 1
+//        }
+
+//        searchBar.setOnClickListener {
+//            var fields=Arrays.asList(Place.Field.ID,Place.Field.NAME,Place.Field.LAT_LNG)
+//            var intent = Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields).build(this)
+//            startActivityForResult(intent, PLACE_PICKER_REQUEST)
+//        }
+
+        val autocompleteFragment = supportFragmentManager.findFragmentById(R.id.autocomplete_fragment) as AutocompleteSupportFragment
+
+        autocompleteFragment.setCountry("LK")
+        autocompleteFragment.setTypeFilter(TypeFilter.ADDRESS)
+
+
+        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME))
+        autocompleteFragment.setOnPlaceSelectedListener(object:PlaceSelectionListener {
+            override fun onPlaceSelected(place:Place)
+            {
+                destination = place.name.toString()
+                destinationLatLng = place.latLng!!
+            }
+            override fun onError(status:Status) {
+                // TODO: Handle the error.
+            }
+        })
 
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -72,7 +113,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
             }
         }
 
-      createLocationRequest()
+        createLocationRequest()
 
     }
 
@@ -94,24 +135,24 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
 
     }
 
-    private fun loadPlacePicker() {
-        val builder = PlacePicker.IntentBuilder()
-
-        try {
-            startActivityForResult(builder.build(this@MapActivity), PLACE_PICKER_REQUEST)
-        } catch (e: GooglePlayServicesRepairableException) {
-            e.printStackTrace()
-        } catch (e: GooglePlayServicesNotAvailableException) {
-            e.printStackTrace()
-        }
-    }
+//    private fun loadPlacePicker() {
+//        val builder = PlacePicker.IntentBuilder()
+//
+//        try {
+//            startActivityForResult(builder.build(this@MapActivity), PLACE_PICKER_REQUEST)
+//        } catch (e: GooglePlayServicesRepairableException) {
+//            e.printStackTrace()
+//        } catch (e: GooglePlayServicesNotAvailableException) {
+//            e.printStackTrace()
+//        }
+//    }
 
 
     private fun setUpMap() {
         if (ActivityCompat.checkSelfPermission(this,
-                android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
-                arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE)
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE)
             return
         }
 
@@ -123,8 +164,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
             {
                 lastLocation = location
                 val currentLatLng = LatLng(location.latitude, location.longitude)
-                //placeMarkerOnMap(currentLatLng)
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 12f))
+                placeMarkerOnMap(currentLatLng)
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
             }
         }
 
@@ -132,9 +173,15 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
 
     private fun placeMarkerOnMap(location: LatLng) {
         val markerOptions = MarkerOptions().position(location)
-        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE))
         mMap.addMarker(markerOptions)
     }
+
+//    private fun placeMarkerOnMap(location: LatLng) {
+//        val markerOptions = MarkerOptions().position(location)
+//        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE))
+//        mMap.addMarker(markerOptions)
+//    }
 
     private fun createLocationRequest() {
         // 1
@@ -167,7 +214,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
                     // and check the result in onActivityResult().
                     e.startResolutionForResult(this@MapActivity,
                         REQUEST_CHECK_SETTINGS)
-                } catch (sendEx: IntentSender.SendIntentException) {
+                } catch (e: Exception) {
                     // Ignore the error.
                 }
             }
@@ -178,9 +225,9 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
     private fun startLocationUpdates() {
         //1
         if (ActivityCompat.checkSelfPermission(this,
-                android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
-                arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                 LOCATION_PERMISSION_REQUEST_CODE)
             return
         }
@@ -197,18 +244,31 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
                 locationUpdateState = true
                 startLocationUpdates()
 
-                if (requestCode == PLACE_PICKER_REQUEST) {
-                    if (resultCode == RESULT_OK) {
-                        val place = PlacePicker.getPlace(this, data)
-                        var addressText = place.name.toString()
-                        addressText += "\n" + place.address.toString()
-
-                        placeMarkerOnMap(place.latLng)
-                    }
-                }
+//                if (requestCode == PLACE_PICKER_REQUEST) {
+//                    if (resultCode == RESULT_OK) {
+//                        val place = PlacePicker.getPlace(this, data)
+//                        var addressText = place.name.toString()
+//                        addressText += "\n" + place.address.toString()
+//
+//                        placeMarkerOnMap(place.latLng)
+//                    }
+//                }
 
             }
+        }
 
+        if (requestCode == PLACE_PICKER_REQUEST) {
+            if (resultCode == Activity.RESULT_OK) {
+                val place =Autocomplete.getPlaceFromIntent(data!!)
+
+//                lat = place.latLng?.latitude
+//                lng = place.latLng?.longitude
+                place.latLng?.let { placeMarkerOnMap(it) }
+            }
+            else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
+                // TODO: Handle the error.
+                var status = Autocomplete.getStatusFromIntent(data!!)
+            }
         }
     }
 
@@ -225,9 +285,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
             startLocationUpdates()
         }
     }
-
-
-
-
-
 }
+
+
