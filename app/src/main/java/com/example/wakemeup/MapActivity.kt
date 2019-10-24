@@ -45,14 +45,15 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
     lateinit var  fileds: List<Place.Field>
 
     lateinit var  polylines:List<Polyline>
-    private val COLORS = intArrayOf(R.color.colorPrimary)
+    private val COLORS = intArrayOf(R.color.polyLine)
+        //intArrayOf(R.color.colorPrimary)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
 
-        polylines = ArrayList<Polyline>()
-
+        polylines = ArrayList()
+        
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
@@ -200,18 +201,18 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(destinationLatLng))
                 val mCameraUpdate = CameraUpdateFactory.newLatLngZoom(destinationLatLng, 15F)
                 mMap.animateCamera(mCameraUpdate)
-                getPolyLines(currentLatLng)
+                getPolyLines(destinationLatLng)
             }
         }
     }
 
-    private fun getPolyLines(currentLocation: LatLng)
+    private fun getPolyLines(destinationLatLng: LatLng)
     {
         val routing = Routing.Builder()
             .travelMode(AbstractRouting.TravelMode.TRANSIT)
             .withListener(this)
             .alternativeRoutes(true)
-            .waypoints(LatLng(lastLocation.latitude, lastLocation.longitude), currentLocation)
+            .waypoints(LatLng(lastLocation.latitude, lastLocation.longitude), destinationLatLng)
             .key("AIzaSyAG36QakYK2Q7Ma6bQlal4we7Vv6fKuks8")
             .build()
         routing.execute()
@@ -265,7 +266,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
             val colorIndex = i % COLORS.size
             val polyOptions = PolylineOptions()
             polyOptions.color(resources.getColor(COLORS[colorIndex]))
-            polyOptions.width((10 + i * 3).toFloat())
+            polyOptions.width((15 + i * 3).toFloat())
             polyOptions.addAll(route.get(i).points)
             val polyline = mMap.addPolyline(polyOptions)
             (polylines as ArrayList<Polyline>).add(polyline)
