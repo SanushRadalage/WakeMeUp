@@ -3,6 +3,7 @@ package com.example.wakemeup
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.animation.AnimationUtils
 import android.widget.Toast
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -13,6 +14,8 @@ import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.android.synthetic.main.activity_main.*
+import android.widget.ImageView
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -24,6 +27,14 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+       val ambuimage = findViewById<ImageView>(R.id.busImg)
+        //val animation1 = AnimationUtils.loadAnimation(this, R.anim.busanimation)
+        val animation1 = AnimationUtils.loadAnimation(this,R.anim.busanimation)
+        val animation2 = AnimationUtils.loadAnimation(this,R.anim.busanimation2)
+        ambuimage.setAnimation(animation1)
+
+
 
 //        place_search_btn.setOnClickListener(){
 //            val intent = Intent(this,PlaceSelect::class.java)
