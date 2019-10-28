@@ -4,6 +4,5 @@
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
     <color name="colorWhite">#FFFFFF</color>
-    <color name="darkRed">#D40E01</color>
     <color name="polyLine">#03A9F4</color>
 </resources>

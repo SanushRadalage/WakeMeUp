@@ -20,7 +20,6 @@ import com.google.android.gms.maps.model.*
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.model.TypeFilter
-import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.android.libraries.places.widget.Autocomplete
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import kotlinx.android.synthetic.main.activity_map.*
@@ -47,14 +46,14 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
 
     lateinit var  polylines:List<Polyline>
     private val COLORS = intArrayOf(R.color.polyLine)
-    //intArrayOf(R.color.colorPrimary)
+        //intArrayOf(R.color.colorPrimary)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
 
         polylines = ArrayList()
-
+        
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
@@ -67,13 +66,11 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
 
         val mPlacesClient = Places.createClient(this)
 
-
-
-
         pick.setOnClickListener {
 
             val intenet = Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fileds)
-                .setTypeFilter(TypeFilter.GEOCODE)
+                .setCountry("LK")
+                .setTypeFilter(TypeFilter.ADDRESS)
                 .build(this)
             startActivityForResult(intenet, PLACE_PICKER_REQUEST)
         }
@@ -110,7 +107,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
 
     private fun setUpMap() {
         if (ActivityCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE)
             return
@@ -209,8 +206,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
         }
     }
 
-
-
     private fun getPolyLines(destinationLatLng: LatLng)
     {
         val routing = Routing.Builder()
@@ -288,3 +283,4 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
 
     }
 }
+
