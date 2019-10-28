@@ -3,41 +3,32 @@ package com.example.wakemeup
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
-import android.content.IntentSender
 import android.content.pm.PackageManager
-import android.location.Address
 import android.location.Location
 import android.os.Bundle
-import android.util.Log
-import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
+import com.directions.route.*
 import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.model.TypeFilter
+import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.android.libraries.places.widget.Autocomplete
-import com.google.android.libraries.places.widget.AutocompleteActivity
-import com.google.android.libraries.places.widget.AutocompleteSupportFragment
-import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.android.synthetic.main.activity_map.*
 import java.lang.Exception
 import java.util.*
+import kotlin.collections.ArrayList
 
-class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener{
+class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener, RoutingListener{
 
     override fun onMarkerClick(p0: Marker?) = false
 
@@ -50,57 +41,42 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
     private var locationUpdateState = false
     lateinit var destination: String
     lateinit var destinationLatLng: LatLng
+    lateinit var currentLatLng: LatLng
 
+    lateinit var  fileds: List<Place.Field>
+
+    lateinit var  polylines:List<Polyline>
+    private val COLORS = intArrayOf(R.color.polyLine)
+    //intArrayOf(R.color.colorPrimary)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
 
+        polylines = ArrayList()
+
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
-        destinationLatLng = LatLng(0.0, 0.0)
+        fileds = Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG)
 
         if (!Places.isInitialized()) {
             Places.initialize(applicationContext, getString(R.string.google_api_key), Locale.US)
         }
 
+        val mPlacesClient = Places.createClient(this)
 
 
-//        val fab = findViewById<FloatingActionButton>(R.id.fab)
-//        fab.setOnClickListener {
-//            loadPlacePicker()
-//        }
-//
-//        editTextBtn.setOnClickListener(){
-//            locationSearchArea.setTransitionVisibility(View.VISIBLE)
-//            click_status = 1
-//        }
-
-//        searchBar.setOnClickListener {
-//            var fields=Arrays.asList(Place.Field.ID,Place.Field.NAME,Place.Field.LAT_LNG)
-//            var intent = Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields).build(this)
-//            startActivityForResult(intent, PLACE_PICKER_REQUEST)
-//        }
-
-        val autocompleteFragment = supportFragmentManager.findFragmentById(R.id.autocomplete_fragment) as AutocompleteSupportFragment
-
-        autocompleteFragment.setCountry("LK")
-        autocompleteFragment.setTypeFilter(TypeFilter.ADDRESS)
 
 
-        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME))
-        autocompleteFragment.setOnPlaceSelectedListener(object:PlaceSelectionListener {
-            override fun onPlaceSelected(place:Place)
-            {
-                destination = place.name.toString()
-                destinationLatLng = place.latLng!!
-            }
-            override fun onError(status:Status) {
-                // TODO: Handle the error.
-            }
-        })
+        pick.setOnClickListener {
+
+            val intenet = Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fileds)
+                .setTypeFilter(TypeFilter.GEOCODE)
+                .build(this)
+            startActivityForResult(intenet, PLACE_PICKER_REQUEST)
+        }
 
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -109,7 +85,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
                 super.onLocationResult(p0)
 
                 lastLocation = p0.lastLocation
-                //placeMarkerOnMap(LatLng(lastLocation.latitude, lastLocation.longitude))
             }
         }
 
@@ -124,8 +99,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
 
     }
 
-
-
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
         mMap.uiSettings.isZoomControlsEnabled = true
@@ -135,22 +108,9 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
 
     }
 
-//    private fun loadPlacePicker() {
-//        val builder = PlacePicker.IntentBuilder()
-//
-//        try {
-//            startActivityForResult(builder.build(this@MapActivity), PLACE_PICKER_REQUEST)
-//        } catch (e: GooglePlayServicesRepairableException) {
-//            e.printStackTrace()
-//        } catch (e: GooglePlayServicesNotAvailableException) {
-//            e.printStackTrace()
-//        }
-//    }
-
-
     private fun setUpMap() {
         if (ActivityCompat.checkSelfPermission(this,
-                    Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE)
             return
@@ -163,12 +123,11 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
             if(location != null)
             {
                 lastLocation = location
-                val currentLatLng = LatLng(location.latitude, location.longitude)
+                currentLatLng = LatLng(location.latitude, location.longitude)
                 placeMarkerOnMap(currentLatLng)
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
             }
         }
-
     }
 
     private fun placeMarkerOnMap(location: LatLng) {
@@ -177,53 +136,43 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
         mMap.addMarker(markerOptions)
     }
 
-//    private fun placeMarkerOnMap(location: LatLng) {
-//        val markerOptions = MarkerOptions().position(location)
-//        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE))
-//        mMap.addMarker(markerOptions)
-//    }
-
     private fun createLocationRequest() {
-        // 1
+
         locationRequest = LocationRequest()
-        // 2
+
         locationRequest.interval = 10000
-        // 3
+
         locationRequest.fastestInterval = 5000
         locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
 
         val builder = LocationSettingsRequest.Builder()
             .addLocationRequest(locationRequest)
 
-        // 4
         val client = LocationServices.getSettingsClient(this)
         val task = client.checkLocationSettings(builder.build())
 
-        // 5
+
         task.addOnSuccessListener {
             locationUpdateState = true
             startLocationUpdates()
         }
         task.addOnFailureListener { e ->
-            // 6
-            if (e is ResolvableApiException) {
-                // Location settings are not satisfied, but this can be fixed
-                // by showing the user a dialog.
+
+            if (e is ResolvableApiException)
+            {
                 try {
-                    // Show the dialog by calling startResolutionForResult(),
-                    // and check the result in onActivityResult().
                     e.startResolutionForResult(this@MapActivity,
                         REQUEST_CHECK_SETTINGS)
-                } catch (e: Exception) {
-                    // Ignore the error.
+                } catch (e: Exception)
+                {
+
                 }
             }
         }
     }
 
-
     private fun startLocationUpdates() {
-        //1
+
         if (ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
@@ -231,11 +180,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
                 LOCATION_PERMISSION_REQUEST_CODE)
             return
         }
-        //2
+
         mFusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, null /* Looper */)
     }
 
-    // 1
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -244,47 +192,99 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
                 locationUpdateState = true
                 startLocationUpdates()
 
-//                if (requestCode == PLACE_PICKER_REQUEST) {
-//                    if (resultCode == RESULT_OK) {
-//                        val place = PlacePicker.getPlace(this, data)
-//                        var addressText = place.name.toString()
-//                        addressText += "\n" + place.address.toString()
-//
-//                        placeMarkerOnMap(place.latLng)
-//                    }
-//                }
-
             }
         }
 
         if (requestCode == PLACE_PICKER_REQUEST) {
             if (resultCode == Activity.RESULT_OK) {
-                val place =Autocomplete.getPlaceFromIntent(data!!)
-
-//                lat = place.latLng?.latitude
-//                lng = place.latLng?.longitude
-                place.latLng?.let { placeMarkerOnMap(it) }
-            }
-            else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
-                // TODO: Handle the error.
-                var status = Autocomplete.getStatusFromIntent(data!!)
+                val place = Autocomplete.getPlaceFromIntent(data!!)
+                destination = place.name!!
+                destinationLatLng = place.latLng!!
+                mMap.addMarker(MarkerOptions().position(destinationLatLng).title(destination))
+                mMap.moveCamera(CameraUpdateFactory.newLatLng(destinationLatLng))
+                val mCameraUpdate = CameraUpdateFactory.newLatLngZoom(destinationLatLng, 15F)
+                mMap.animateCamera(mCameraUpdate)
+                getPolyLines(destinationLatLng)
             }
         }
     }
 
-    // 2
+
+
+    private fun getPolyLines(destinationLatLng: LatLng)
+    {
+        val routing = Routing.Builder()
+            .travelMode(AbstractRouting.TravelMode.TRANSIT)
+            .withListener(this)
+            .alternativeRoutes(true)
+            .waypoints(LatLng(lastLocation.latitude, lastLocation.longitude), destinationLatLng)
+            .key("AIzaSyAG36QakYK2Q7Ma6bQlal4we7Vv6fKuks8")
+            .build()
+        routing.execute()
+    }
+
+
     override fun onPause() {
         super.onPause()
         mFusedLocationProviderClient.removeLocationUpdates(locationCallback)
     }
 
-    // 3
     public override fun onResume() {
         super.onResume()
         if (!locationUpdateState) {
             startLocationUpdates()
         }
     }
+
+    override fun onRoutingCancelled() {
+        TODO("not implemented")
+    }
+
+    override fun onRoutingStart()
+    {
+
+    }
+
+    override fun onRoutingFailure(p0: RouteException?)
+    {
+        if(p0 != null) {
+
+            Toast.makeText(this, "Error: " + p0.message, Toast.LENGTH_LONG).show();
+        }else {
+            Toast.makeText(this, "Something went wrong, Try again", Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
+    override fun onRoutingSuccess(route: ArrayList<Route>?, p1: Int)
+    {
+        if (polylines.isNotEmpty())
+        {
+            for (poly in polylines)
+            {
+                poly.remove()
+            }
+        }
+        polylines = ArrayList()
+        for (i in 0 until route!!.size)
+        {
+            val colorIndex = i % COLORS.size
+            val polyOptions = PolylineOptions()
+            polyOptions.color(resources.getColor(COLORS[colorIndex]))
+            polyOptions.width((15 + i * 3).toFloat())
+            polyOptions.addAll(route.get(i).points)
+            val polyline = mMap.addPolyline(polyOptions)
+            (polylines as ArrayList<Polyline>).add(polyline)
+            Toast.makeText(applicationContext, "Route " + (i + 1) + ": distance - " + route.get(i).distanceValue + ": duration - " + route.get(i).durationValue, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun erasePolyLines()
+    {
+        for (poly in polylines)
+        {
+            poly.remove()
+        }
+
+    }
 }
-
-

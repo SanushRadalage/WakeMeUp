@@ -15,6 +15,22 @@
       },
       "oauth_client": [
         {
+          "client_id": "841578828829-56uhblvtf6nru30oo8ei2j1gfn8ppaak.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.wakemeup",
+            "certificate_hash": "15c0af4876f0fc70ef11a9a7d16d2058579ddb45"
+          }
+        },
+        {
+          "client_id": "841578828829-npmk0ckgsj8fce306mbbfq045soan8vn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.wakemeup",
+            "certificate_hash": "4b5b3710a2fd4d2c0f9f7c0a197379b1be4a5633"
+          }
+        },
+        {
           "client_id": "841578828829-d72ptqf9i2qcqap28plk13ajj3qsgvi8.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
@@ -29,7 +45,7 @@
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyByNnlJFkPqeGn2JfWWrLtPyczjzQiaRck"
+          "current_key": "AIzaSyAWXng0zFJRM9nNWlgcWhZtJlkx7kCVwf4"
         }
       ],
       "services": {

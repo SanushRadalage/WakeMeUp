@@ -25,6 +25,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+//        place_search_btn.setOnClickListener(){
+//            val intent = Intent(this,PlaceSelect::class.java)
+//            startActivity(intent)
+//        }
+
         firebaseAuth = FirebaseAuth.getInstance()
 
 //        next_btn.setOnClickListener{
