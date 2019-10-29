@@ -1,7 +1,9 @@
 package com.example.wakemeup
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
@@ -9,6 +11,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -25,6 +28,8 @@ import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.Autocomplete
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import kotlinx.android.synthetic.main.activity_map.*
+import kotlinx.android.synthetic.main.card_view.*
+import org.jetbrains.anko.vibrator
 import java.lang.Exception
 import java.util.*
 import kotlin.collections.ArrayList
@@ -89,6 +94,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
                 lastLocation = p0.lastLocation
             }
         }
+
 
         createLocationRequest()
 
@@ -281,6 +287,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
 
     }
 
+
+    @SuppressLint("MissingPermission")
     override fun onRoutingSuccess(route: ArrayList<Route>?, p1: Int) {
         if (polylines.isNotEmpty()) {
             for (poly in polylines) {
@@ -299,17 +307,36 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
 
             distance = route.get(i).distanceValue
             //Toast.makeText(applicationContext, "Route " + (i + 1) + ": distance - " + route.get(i).distanceValue + ": duration - " + route.get(i).durationValue, Toast.LENGTH_SHORT).show()
-            if (distance <= 1000) {
+            if (distance <= 100) {
+                cardlayout.visibility = View.VISIBLE
                 if (Build.VERSION.SDK_INT >= 26) {
-                    (this.getSystemService(VIBRATOR_SERVICE) as Vibrator).vibrate(
-                        VibrationEffect.createOneShot(
-                            10000,
-                            VibrationEffect.EFFECT_DOUBLE_CLICK
+                    val vibrator: Vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                        vibrator.vibrate(
+
+                            VibrationEffect.createOneShot(
+                                100,
+                                VibrationEffect.EFFECT_DOUBLE_CLICK
+                            )
                         )
-                    )
+//                    if(click_status !=0){
+//                        vibrator.cancel()
+//                    }
+                    okayBtn.setOnClickListener(){
+                        vibrator.cancel()
+                        cardlayout.visibility = View.GONE
+                    }
+
                 } else
                 {
-                    (this.getSystemService(VIBRATOR_SERVICE) as Vibrator).vibrate(500)
+                        vibrator.vibrate(10000)
+//                    if(click_status !=0){
+//                        vibrator.cancel()
+//                    }
+                    okayBtn.setOnClickListener(){
+                        vibrator.cancel()
+                        cardlayout.visibility = View.GONE
+                    }
+
                 }
             }
         }
@@ -320,5 +347,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
             poly.remove()
         }
     }
+
 }
 
