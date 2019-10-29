@@ -5,7 +5,10 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
+import android.os.Build
 import android.os.Bundle
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -19,7 +22,6 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
-import com.google.android.libraries.places.api.model.TypeFilter
 import com.google.android.libraries.places.widget.Autocomplete
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import kotlinx.android.synthetic.main.activity_map.*
@@ -27,7 +29,8 @@ import java.lang.Exception
 import java.util.*
 import kotlin.collections.ArrayList
 
-class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener, RoutingListener{
+class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener,
+    RoutingListener {
 
     override fun onMarkerClick(p0: Marker?) = false
 
@@ -41,19 +44,22 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
     lateinit var destination: String
     lateinit var destinationLatLng: LatLng
     lateinit var currentLatLng: LatLng
+    var distance: Int = 0
+    lateinit var mStarterMarker: Marker
+    lateinit var mEndMarker: Marker
 
-    lateinit var  fileds: List<Place.Field>
+    lateinit var fileds: List<Place.Field>
 
-    lateinit var  polylines:List<Polyline>
+    lateinit var polylines: List<Polyline>
     private val COLORS = intArrayOf(R.color.polyLine)
-        //intArrayOf(R.color.colorPrimary)
+    //intArrayOf(R.color.colorPrimary)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
 
         polylines = ArrayList()
-        
+
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
@@ -70,7 +76,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
 
             val intenet = Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fileds)
                 .setCountry("LK")
-                .setTypeFilter(TypeFilter.ADDRESS)
                 .build(this)
             startActivityForResult(intenet, PLACE_PICKER_REQUEST)
         }
@@ -89,6 +94,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
 
     }
 
+
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1
         private const val REQUEST_CHECK_SETTINGS = 2
@@ -101,37 +107,51 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
         mMap.uiSettings.isZoomControlsEnabled = true
         mMap.setOnMarkerClickListener(this)
 
+        var success = googleMap.setMapStyle(
+            MapStyleOptions.loadRawResourceStyle(
+                this, R.raw.mapstyle
+            )
+        )
+
         setUpMap()
 
     }
 
     private fun setUpMap() {
-        if (ActivityCompat.checkSelfPermission(this,
-                    Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE)
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE
+            )
             return
         }
 
         mMap.isMyLocationEnabled = true
 
-        mFusedLocationProviderClient.lastLocation.addOnSuccessListener(this){
-                location ->
-            if(location != null)
-            {
+        mFusedLocationProviderClient.lastLocation.addOnSuccessListener(this) { location ->
+            if (location != null) {
                 lastLocation = location
                 currentLatLng = LatLng(location.latitude, location.longitude)
-                placeMarkerOnMap(currentLatLng)
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
+                mStarterMarker = mMap.addMarker(
+                    MarkerOptions().position(currentLatLng).title("Going to Sleep!").icon(
+                        BitmapDescriptorFactory.fromResource(R.mipmap.sleeping)
+                    )
+                )
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 17f))
             }
         }
     }
 
-    private fun placeMarkerOnMap(location: LatLng) {
-        val markerOptions = MarkerOptions().position(location)
-        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE))
-        mMap.addMarker(markerOptions)
-    }
+//    private fun placeMarkerOnMap(location: LatLng)
+//    {
+//        val markerOptions = MarkerOptions().position(location)
+//        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE))
+//        mMap.addMarker(markerOptions)
+//    }
 
     private fun createLocationRequest() {
 
@@ -155,13 +175,13 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
         }
         task.addOnFailureListener { e ->
 
-            if (e is ResolvableApiException)
-            {
+            if (e is ResolvableApiException) {
                 try {
-                    e.startResolutionForResult(this@MapActivity,
-                        REQUEST_CHECK_SETTINGS)
-                } catch (e: Exception)
-                {
+                    e.startResolutionForResult(
+                        this@MapActivity,
+                        REQUEST_CHECK_SETTINGS
+                    )
+                } catch (e: Exception) {
 
                 }
             }
@@ -170,15 +190,24 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
 
     private fun startLocationUpdates() {
 
-        if (ActivityCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                LOCATION_PERMISSION_REQUEST_CODE)
+                LOCATION_PERMISSION_REQUEST_CODE
+            )
             return
         }
 
-        mFusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, null /* Looper */)
+        mFusedLocationProviderClient.requestLocationUpdates(
+            locationRequest,
+            locationCallback,
+            null /* Looper */
+        )
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -188,7 +217,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
             if (resultCode == Activity.RESULT_OK) {
                 locationUpdateState = true
                 startLocationUpdates()
-
             }
         }
 
@@ -197,17 +225,20 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
                 val place = Autocomplete.getPlaceFromIntent(data!!)
                 destination = place.name!!
                 destinationLatLng = place.latLng!!
-                mMap.addMarker(MarkerOptions().position(destinationLatLng).title(destination))
+                mEndMarker = mMap.addMarker(
+                    MarkerOptions().position(destinationLatLng).title(destination).icon(
+                        BitmapDescriptorFactory.fromResource(R.mipmap.busstop)
+                    )
+                )
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(destinationLatLng))
-                val mCameraUpdate = CameraUpdateFactory.newLatLngZoom(destinationLatLng, 15F)
+                val mCameraUpdate = CameraUpdateFactory.newLatLngZoom(destinationLatLng, 13F)
                 mMap.animateCamera(mCameraUpdate)
                 getPolyLines(destinationLatLng)
             }
         }
     }
 
-    private fun getPolyLines(destinationLatLng: LatLng)
-    {
+    private fun getPolyLines(destinationLatLng: LatLng) {
         val routing = Routing.Builder()
             .travelMode(AbstractRouting.TravelMode.TRANSIT)
             .withListener(this)
@@ -222,6 +253,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
     override fun onPause() {
         super.onPause()
         mFusedLocationProviderClient.removeLocationUpdates(locationCallback)
+        //setUpMap()
     }
 
     public override fun onResume() {
@@ -232,55 +264,61 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
     }
 
     override fun onRoutingCancelled() {
-        TODO("not implemented")
+        mEndMarker.remove()
     }
 
-    override fun onRoutingStart()
-    {
+    override fun onRoutingStart() {
 
     }
 
-    override fun onRoutingFailure(p0: RouteException?)
-    {
-        if(p0 != null) {
+    override fun onRoutingFailure(p0: RouteException?) {
+        if (p0 != null) {
 
-            Toast.makeText(this, "Error: " + p0.message, Toast.LENGTH_LONG).show();
-        }else {
-            Toast.makeText(this, "Something went wrong, Try again", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Error: " + p0.message, Toast.LENGTH_LONG).show()
+        } else {
+            Toast.makeText(this, "Something went wrong, Try again", Toast.LENGTH_SHORT).show()
         }
 
     }
 
-    override fun onRoutingSuccess(route: ArrayList<Route>?, p1: Int)
-    {
-        if (polylines.isNotEmpty())
-        {
-            for (poly in polylines)
-            {
+    override fun onRoutingSuccess(route: ArrayList<Route>?, p1: Int) {
+        if (polylines.isNotEmpty()) {
+            for (poly in polylines) {
                 poly.remove()
             }
         }
         polylines = ArrayList()
-        for (i in 0 until route!!.size)
-        {
+        for (i in 0 until route!!.size) {
             val colorIndex = i % COLORS.size
             val polyOptions = PolylineOptions()
             polyOptions.color(resources.getColor(COLORS[colorIndex]))
-            polyOptions.width((15 + i * 3).toFloat())
+            polyOptions.width((5 + i * 3).toFloat())
             polyOptions.addAll(route.get(i).points)
             val polyline = mMap.addPolyline(polyOptions)
             (polylines as ArrayList<Polyline>).add(polyline)
-            Toast.makeText(applicationContext, "Route " + (i + 1) + ": distance - " + route.get(i).distanceValue + ": duration - " + route.get(i).durationValue, Toast.LENGTH_SHORT).show()
+
+            distance = route.get(i).distanceValue
+            //Toast.makeText(applicationContext, "Route " + (i + 1) + ": distance - " + route.get(i).distanceValue + ": duration - " + route.get(i).durationValue, Toast.LENGTH_SHORT).show()
+            if (distance <= 1000) {
+                if (Build.VERSION.SDK_INT >= 26) {
+                    (this.getSystemService(VIBRATOR_SERVICE) as Vibrator).vibrate(
+                        VibrationEffect.createOneShot(
+                            10000,
+                            VibrationEffect.EFFECT_DOUBLE_CLICK
+                        )
+                    )
+                } else
+                {
+                    (this.getSystemService(VIBRATOR_SERVICE) as Vibrator).vibrate(500)
+                }
+            }
         }
     }
 
-    private fun erasePolyLines()
-    {
-        for (poly in polylines)
-        {
+    private fun erasePolyLines() {
+        for (poly in polylines) {
             poly.remove()
         }
-
     }
 }
 

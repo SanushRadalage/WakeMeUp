@@ -15,6 +15,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.android.synthetic.main.activity_main.*
 import android.widget.ImageView
+import com.google.firebase.auth.FirebaseUser
 
 
 class MainActivity : AppCompatActivity() {
@@ -28,27 +29,33 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-       val ambuimage = findViewById<ImageView>(R.id.busImg)
+       val busImage = findViewById<ImageView>(R.id.busImg)
+        val cloudImage = findViewById<ImageView>(R.id.cloud)
+
         //val animation1 = AnimationUtils.loadAnimation(this, R.anim.busanimation)
         val animation1 = AnimationUtils.loadAnimation(this,R.anim.busanimation)
-        val animation2 = AnimationUtils.loadAnimation(this,R.anim.busanimation2)
-        ambuimage.setAnimation(animation1)
+        val animation2 = AnimationUtils.loadAnimation(this,R.anim.cloudanimation)
+        cloudImage.animation = animation2
+        busImage.animation = animation1
 
-
-
-//        place_search_btn.setOnClickListener(){
-//            val intent = Intent(this,PlaceSelect::class.java)
-//            startActivity(intent)
-//        }
 
         firebaseAuth = FirebaseAuth.getInstance()
 
-//        next_btn.setOnClickListener{
-//            val intent = Intent(this, MapsActivity::class.java)
-//            startActivity(intent)
 
         setupUI()
         configureGoogleSignIn()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val currentUser = firebaseAuth.currentUser
+        //updateUI(currentUser)
+        if(currentUser != null)
+        {
+            val intent = Intent(this, MapActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
     }
 
     private fun configureGoogleSignIn()
@@ -86,7 +93,6 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
-
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
