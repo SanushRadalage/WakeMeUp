@@ -37,6 +37,7 @@
                                               <map>
                                                 <entry key="color" value="000000" />
                                                 <entry key="opacityPercent" value="80" />
+                                                <entry key="paddingPercent" value="5" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -47,10 +48,10 @@
                                   <option name="values">
                                     <map>
                                       <entry key="assetType" value="IMAGE" />
-                                      <entry key="imageAsset" value="F:\Downloads\pre shhot\152-1525702_loaves-and-fishes-clipart.png" />
-                                      <entry key="outputName" value="ic_googlelogo" />
-                                      <entry key="theme" value="HOLO_DARK" />
-                                      <entry key="themeColor" value="ffffff" />
+                                      <entry key="imageAsset" value="$USER_HOME$/Downloads/curvedroad.png" />
+                                      <entry key="outputName" value="ic_curve" />
+                                      <entry key="theme" value="CUSTOM" />
+                                      <entry key="themeColor" value="ffd000" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -67,11 +68,17 @@
                                             <option name="values">
                                               <map>
                                                 <entry key="color" value="000000" />
+                                                <entry key="scalingPercent" value="118" />
                                               </map>
                                             </option>
                                           </PersistentState>
                                         </value>
                                       </entry>
+                                    </map>
+                                  </option>
+                                  <option name="values">
+                                    <map>
+                                      <entry key="foregroundImage" value="$USER_HOME$/wakemelogo.jpg" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -132,6 +139,11 @@
                 </map>
               </option>
             </PersistentState>
+          </value>
+        </entry>
+        <entry key="vectorWizard">
+          <value>
+            <PersistentState />
           </value>
         </entry>
       </map>

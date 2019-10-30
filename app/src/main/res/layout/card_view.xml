@@ -1,15 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/cardlayout"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:visibility="gone"
-
-    >
+    android:orientation="vertical"
+    android:visibility="gone">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/destination_layout"
@@ -17,18 +14,17 @@
         android:layout_height="300dp"
         android:layout_marginStart="20dp"
         android:layout_marginEnd="20dp"
+        android:outlineAmbientShadowColor="@color/white"
+        android:outlineSpotShadowColor="@color/white"
 
         app:cardBackgroundColor="@color/colorPrimary"
         app:cardCornerRadius="20dp"
-
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.498"
-        android:outlineAmbientShadowColor="@color/white"
-        android:outlineSpotShadowColor="@color/white">
+        app:layout_constraintVertical_bias="0.498">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -40,6 +36,7 @@
 
                 android:layout_height="wrap_content"
                 android:text="Time To WakeUp !"
+                android:textColor="@color/white"
                 android:textSize="36sp"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -54,6 +51,7 @@
                 android:layout_height="wrap_content"
                 android:text="Your destination is getting closer"
                 android:textSize="18sp"
+                android:textColor="@color/white"
                 app:layout_constraintBottom_toBottomOf="@id/sleepingPerson"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -64,8 +62,7 @@
                 android:id="@+id/sleepingPerson"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
-                android:src="@drawable/sleeping"
-
+                android:src="@drawable/sleepingboy"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -76,10 +73,13 @@
                 android:id="@+id/okayBtn"
                 android:layout_width="150dp"
                 android:layout_height="wrap_content"
-                android:text="Okay !"
-                android:textAllCaps="false"
+                android:background="@color/white"
                 android:shadowColor="@color/gray"
-                android:background="@drawable/card_bg_gradient"
+                android:text="Okay !"
+                android:textColor="@color/black"
+                android:textSize="30dp"
+                android:textStyle="bold"
+                android:textAllCaps="false"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

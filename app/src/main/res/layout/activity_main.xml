@@ -8,22 +8,22 @@
     android:background="@drawable/bg_dark_signin"
     >
 
+
     <ImageView
         android:id="@+id/colombo_img"
-        android:layout_width="411dp"
-        android:layout_height="351dp"
-        android:layout_marginTop="50dp"
+        android:layout_width="448dp"
+        android:layout_height="374dp"
         android:src="@drawable/tower"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.513"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
 
     <ImageView
         android:id="@+id/busImg"
         android:layout_width="125dp"
         android:layout_height="150dp"
-        android:layout_marginBottom="168dp"
+        android:layout_marginBottom="204dp"
         android:src="@drawable/schoolbus"
         app:layout_constraintBottom_toTopOf="@+id/google_button"
         app:layout_constraintEnd_toEndOf="parent"
@@ -33,10 +33,10 @@
         android:id="@+id/cloud"
         android:layout_width="100dp"
         android:layout_height="90dp"
-        android:layout_marginTop="68dp"
+        android:layout_marginTop="20dp"
         android:src="@drawable/cloud"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.356"
+        app:layout_constraintHorizontal_bias="0.324"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -59,15 +59,12 @@
 
         <ImageView
             android:id="@+id/google_logo"
-            android:layout_width="25dp"
+            android:layout_width="wrap_content"
             android:layout_height="25dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginLeft="16dp"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
             android:background="@drawable/ic_googlelogo"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/textView"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
@@ -77,18 +74,35 @@
             android:id="@+id/textView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginLeft="8dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginLeft="20dp"
             android:fontFamily="sans-serif-condensed"
             android:text="Sign In"
             android:textColor="@color/white"
             android:textSize="23sp"
             android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintHorizontal_bias="0.227"
+            app:layout_constraintStart_toEndOf="@+id/google_logo"
             app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="176dp"
+        android:fontFamily="sans-serif-condensed"
+        android:text="Get Ready for Sleep"
+        android:textColor="@color/white"
+        android:textSize="35sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.507"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <!--    <Button-->
 <!--        android:id="@+id/place_search_btn"-->

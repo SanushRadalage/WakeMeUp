@@ -3,7 +3,7 @@
     <translate
         android:fromXDelta="-100%p"
         android:toXDelta="100%p"
-        android:duration="3000"
+        android:duration="4000"
         android:startOffset = "500"
         android:repeatCount = "infinite"
 
